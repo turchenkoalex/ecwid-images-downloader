@@ -1,6 +1,8 @@
 package api
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Image data
 type Image struct {
@@ -17,18 +19,20 @@ func (product Product) Images() []Image {
 
 		if image.ImageOriginalURL != "" {
 			downloadableImage.URL = image.ImageOriginalURL
-		} else if image.image1500pxURL != "" {
-			downloadableImage.URL = image.image1500pxURL
-		} else if image.image800pxURL != "" {
-			downloadableImage.URL = image.image800pxURL
-		} else if image.image400pxURL != "" {
-			downloadableImage.URL = image.image400pxURL
+		} else if image.Image1500pxURL != "" {
+			downloadableImage.URL = image.Image1500pxURL
+		} else if image.Image800pxURL != "" {
+			downloadableImage.URL = image.Image800pxURL
+		} else if image.Image400pxURL != "" {
+			downloadableImage.URL = image.Image400pxURL
 		} else {
-			downloadableImage.URL = image.image160pxURL
+			downloadableImage.URL = image.Image160pxURL
 		}
 
 		if downloadableImage.URL != "" {
 			images = append(images, downloadableImage)
+		} else {
+			fmt.Printf("Not found image for product %d\n", product.ID)
 		}
 	}
 	return images

@@ -44,10 +44,10 @@ type ProductMedia struct {
 type ProductImage struct {
 	ID               string
 	ImageOriginalURL string
-	image1500pxURL   string
-	image800pxURL    string
-	image400pxURL    string
-	image160pxURL    string
+	Image1500pxURL   string
+	Image800pxURL    string
+	Image400pxURL    string
+	Image160pxURL    string
 }
 
 // Categories - https://api-docs.ecwid.com/reference/categories#response
