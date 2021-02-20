@@ -59,10 +59,11 @@ func (status *Reporter) MarkImageDownloaded(success bool) {
 }
 
 func (status *Reporter) Start(duration time.Duration) {
-	ticker := time.NewTicker(duration)
 	status.printStatus()
 
 	go func() {
+		ticker := time.NewTicker(duration)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-status.done:
