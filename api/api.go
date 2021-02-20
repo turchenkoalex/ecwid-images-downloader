@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -140,6 +141,10 @@ func readJSON(httpClient *http.Client, url string, target interface{}) error {
 		return err
 	}
 	defer response.Body.Close()
+
+	if response.StatusCode == 403 {
+		return errors.New("INVALID_TOKEN")
+	}
 
 	return json.NewDecoder(response.Body).Decode(target)
 }
