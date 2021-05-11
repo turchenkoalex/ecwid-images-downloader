@@ -5,6 +5,7 @@ import (
 	"github.com/turchenkoalex/ecwid-images-downloader/cmd"
 	"github.com/turchenkoalex/ecwid-images-downloader/status"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -17,6 +18,7 @@ func main() {
 	options, err := cmd.ReadOptions()
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
 		return
 	}
 
