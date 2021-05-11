@@ -10,7 +10,7 @@ type Image struct {
 	URL      string
 }
 
-// Image - extract all available images from products structure
+// Images - extract all available images from products structure
 func (product Product) Images() []Image {
 	var images []Image
 	for _, image := range product.Media.Images {
