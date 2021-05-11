@@ -49,6 +49,8 @@ func DownloadProducts(httpClient *http.Client, options Options, imagesChan chan 
 		wg.Wait()
 		offset += limit
 	}
+
+	status.MarkAllProductsScheduled()
 }
 
 func downloadCombinations(httpClient *http.Client, productId int, options Options, imagesChan chan api.Image, status *status.Reporter) {
@@ -87,6 +89,8 @@ func DownloadCategories(httpClient *http.Client, options Options, imagesChan cha
 
 		offset += limit
 	}
+
+	status.MarkAllCategoriesScheduled()
 }
 
 func DownloadImages(httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {

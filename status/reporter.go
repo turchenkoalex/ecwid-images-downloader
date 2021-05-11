@@ -14,6 +14,8 @@ type Reporter struct {
 	productsProcessedCount   int32
 	categoriesCount          int
 	categoriesProcessedCount int32
+	allCategoriesScheduled   int32
+	allProductsScheduled     int32
 	done                     chan interface{}
 }
 
@@ -26,6 +28,8 @@ func CreateReporter(productsCount int, categoriesCount int) *Reporter {
 		productsProcessedCount:   0,
 		categoriesCount:          categoriesCount,
 		categoriesProcessedCount: 0,
+		allCategoriesScheduled:   0,
+		allProductsScheduled:     0,
 		done:                     make(chan interface{}),
 	}
 }
@@ -48,6 +52,19 @@ func (status *Reporter) MarkProductProcessed() {
 
 func (status *Reporter) MarkCategoryProcessed() {
 	atomic.AddInt32(&status.categoriesProcessedCount, 1)
+}
+
+func (status *Reporter) MarkAllCategoriesScheduled() {
+	atomic.StoreInt32(&status.allCategoriesScheduled, 1)
+}
+
+func (status *Reporter) MarkAllProductsScheduled() {
+	atomic.StoreInt32(&status.allProductsScheduled, 1)
+}
+
+func (status *Reporter) allImagesScheduled() bool {
+	return 1 == atomic.LoadInt32(&status.allCategoriesScheduled) &&
+		1 == atomic.LoadInt32(&status.allProductsScheduled)
 }
 
 func (status *Reporter) MarkImageDownloaded(success bool) {
@@ -76,33 +93,46 @@ func (status *Reporter) Start(duration time.Duration) {
 }
 
 func (status *Reporter) printStatus() {
+	categoriesProcessedCount := atomic.LoadInt32(&status.categoriesProcessedCount)
+	productsProcessedCount := atomic.LoadInt32(&status.productsProcessedCount)
+	imagesProcessed := atomic.LoadInt32(&status.imageDownloadErrors) + atomic.LoadInt32(&status.imageDownloadSuccess)
+	imagesTotalCount := atomic.LoadInt32(&status.imageTotalCount)
+
 	categoriesPercent := float32(1)
 	if status.categoriesCount > 0 {
-		categoriesPercent = float32(status.categoriesProcessedCount) / float32(status.categoriesCount)
+		categoriesPercent = float32(categoriesProcessedCount) / float32(status.categoriesCount)
 	}
 
 	productsPercent := float32(1)
 	if status.productsCount > 0 {
-		productsPercent = float32(status.productsProcessedCount) / float32(status.productsCount)
+		productsPercent = float32(productsProcessedCount) / float32(status.productsCount)
 	}
 
+	allImagesScheduled := status.allImagesScheduled()
+
 	imagesPercent := float32(0)
-	imagesProcessed := status.imageDownloadErrors + status.imageDownloadSuccess
-	if status.imageTotalCount > 0 {
-		imagesPercent = float32(imagesProcessed) / float32(status.imageTotalCount)
+	if imagesTotalCount > 0 && allImagesScheduled {
+		imagesPercent = float32(imagesProcessed) / float32(imagesTotalCount)
+	}
+
+	var imagesPercentString string
+	if allImagesScheduled {
+		imagesPercentString = fmt.Sprintf("%.f%%", imagesPercent*100)
+	} else {
+		imagesPercentString = "??%"
 	}
 
 	totalPercent := categoriesPercent*0.15 + productsPercent*0.15 + imagesPercent*0.7
 
-	fmt.Printf("[%3.f%%]: Images %d of %d (%.f%%). Categories %d of %d (%2.f%%). Products %d of %d (%2.f%%)\n",
+	fmt.Printf("[%3.f%%]: Images %d of %d (%s). Categories %d of %d (%2.f%%). Products %d of %d (%2.f%%)\n",
 		totalPercent*100,
 		imagesProcessed,
-		status.imageTotalCount,
-		imagesPercent*100,
-		status.categoriesProcessedCount,
+		imagesTotalCount,
+		imagesPercentString,
+		categoriesProcessedCount,
 		status.categoriesCount,
 		categoriesPercent*100,
-		status.productsProcessedCount,
+		productsProcessedCount,
 		status.productsCount,
 		productsPercent*100,
 	)
