@@ -76,7 +76,7 @@ func configureDirs(downloadDir string) error {
 
 	err := os.Chdir(downloadDir)
 	if err != nil {
-		return fmt.Errorf("Can't change active dirrectory to %s", downloadDir)
+		return fmt.Errorf("can't change active dirrectory to %s", downloadDir)
 	}
 
 	return nil
