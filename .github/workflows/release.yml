@@ -1,41 +1,61 @@
+name: Release Go Project
+
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
 
 permissions:
   contents: write
   packages: write
 
 jobs:
-  release:
-    name: Release binaries
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [linux, darwin]
+        arch: [amd64, arm64]
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Go
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.0
-      - name: Build macOS amd64
+          go-version: 1.23
+      - name: Build binary
         env:
           CGO_ENABLED: 0
-          GOOS: darwin
-          GOARCH: amd64
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
         run: |
-          go build -ldflags "-s -w -X ecwid-images-downloader/cmd.version=${{ github.event.release.tag_name }} -X ecwid-images-downloader/cmd.commit=${{ github.sha }} -X ecwid-images-downloader/cmd.date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" -o ecwid-images-downloader-amd64
-          tar -czvf ecwid-images-downloader-amd64.tar.gz ecwid-images-downloader-amd64
-      - name: Build macOS arm64
-        env:
-          CGO_ENABLED: 0
-          GOOS: darwin
-          GOARCH: arm64
+          go build -ldflags "-s -w -X ecwid-images-downloader/cmd.version=${{ github.event.release.tag_name }} -X ecwid-images-downloader/cmd.commit=${{ github.sha }} -X ecwid-images-downloader/cmd.date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" -o ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}
+
+      - name: Archive binary
         run: |
-          go build -ldflags "-s -w -X ecwid-images-downloader/cmd.version=${{ github.event.release.tag_name }} -X ecwid-images-downloader/cmd.commit=${{ github.sha }} -X ecwid-images-downloader/cmd.date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" -o ecwid-images-downloader-arm64
-          tar -czvf ecwid-images-downloader-arm64.tar.gz ecwid-images-downloader-arm64
-      - name: Release
+          zip ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}.zip ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}
+          path: ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          fail_on_unmatched_files: true
           files: |
-            ecwid-images-downloader-arm64.tar.gz
-            ecwid-images-downloader-amd64.tar.gz
+            ./ecwid-images-downloader-*/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
