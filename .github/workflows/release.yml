@@ -31,7 +31,7 @@ jobs:
           GOARCH: arm64
         run: |
           go build -ldflags "-s -w -X ecwid-images-downloader/cmd.version=${{ github.event.release.tag_name }} -X ecwid-images-downloader/cmd.commit=${{ github.sha }} -X ecwid-images-downloader/cmd.date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" -o ecwid-images-downloader-arm64
-          tar -czvf ecwid-images-downloader-amd64.tar.gz ecwid-images-downloader-arm64
+          tar -czvf ecwid-images-downloader-arm64.tar.gz ecwid-images-downloader-arm64
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
