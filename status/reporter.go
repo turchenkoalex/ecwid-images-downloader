@@ -124,18 +124,30 @@ func (status *Reporter) printStatus() {
 
 	totalPercent := categoriesPercent*0.15 + productsPercent*0.15 + imagesPercent*0.7
 
-	fmt.Printf("[%3.f%%]: Images %d of %d (%s). Categories %d of %d (%2.f%%). Products %d of %d (%2.f%%)\n",
+	fmt.Printf("[%3.f%%]: Images %d of %d (%s).",
 		totalPercent*100,
 		imagesProcessed,
 		imagesTotalCount,
 		imagesPercentString,
-		categoriesProcessedCount,
-		status.categoriesCount,
-		categoriesPercent*100,
-		productsProcessedCount,
-		status.productsCount,
-		productsPercent*100,
 	)
+
+	if status.categoriesCount > 0 {
+		fmt.Printf(" Processed categories %d of %d (%2.f%%)",
+			categoriesProcessedCount,
+			status.categoriesCount,
+			categoriesPercent*100,
+		)
+	}
+
+	if status.productsCount > 0 {
+		fmt.Printf(" Processed products %d of %d (%2.f%%)",
+			productsProcessedCount,
+			status.productsCount,
+			productsPercent*100,
+		)
+	}
+
+	fmt.Println()
 }
 
 func (status *Reporter) Done() {
