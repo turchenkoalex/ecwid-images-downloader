@@ -23,7 +23,23 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Start downloading product images (combinations mode: %v) for store %d with token %s to dir %s. (parallelism: %d)\n",
+	if options.SkipProducts && options.SkipCategories {
+		fmt.Println("Skip categories and products in same time not allowed")
+		os.Exit(1)
+		return
+	}
+
+	subject := ""
+	if options.SkipCategories {
+		subject = "products"
+	} else if options.SkipProducts {
+		subject = "categories"
+	} else {
+		subject = "products and categories"
+	}
+
+	fmt.Printf("Start downloading %s images (combinations mode: %v) for store %d with token %s to dir %s. (parallelism: %d)\n",
+		subject,
 		options.UseCombinations,
 		options.StoreID,
 		options.PublicToken,
@@ -33,16 +49,23 @@ func main() {
 
 	httpClient := &http.Client{Timeout: 15 * time.Second}
 
-	totalProductCount, err := api.LoadProductsTotalCount(httpClient, options.StoreID, options.PublicToken)
-	if err != nil {
-		fmt.Println("Error occurred while calculate products count", err)
-		return
+	totalProductCount := 0
+	totalCategoriesCount := 0
+
+	if !options.SkipProducts {
+		totalProductCount, err = api.LoadProductsTotalCount(httpClient, options.StoreID, options.PublicToken)
+		if err != nil {
+			fmt.Println("Error occurred while calculate products count", err)
+			return
+		}
 	}
 
-	totalCategoriesCount, err := api.LoadCategoriesTotalCount(httpClient, options.StoreID, options.PublicToken)
-	if err != nil {
-		fmt.Println("Error occurred while calculate categories count", err)
-		return
+	if !options.SkipCategories {
+		totalCategoriesCount, err = api.LoadCategoriesTotalCount(httpClient, options.StoreID, options.PublicToken)
+		if err != nil {
+			fmt.Println("Error occurred while calculate categories count", err)
+			return
+		}
 	}
 
 	if totalProductCount == 0 && totalCategoriesCount == 0 {
@@ -76,18 +99,22 @@ func main() {
 	wg := &sync.WaitGroup{}
 
 	// загрузим все товары и поставим загрузку картинок в очередь imagesChan
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		cmd.DownloadProducts(httpClient, options, imagesChan, reporter)
-	}()
+	if !options.SkipProducts {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			cmd.DownloadProducts(httpClient, options, imagesChan, reporter)
+		}()
+	}
 
 	// загрузим все категории и поставим загрузку картинок в очередь imagesChan
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		cmd.DownloadCategories(httpClient, options, imagesChan, reporter)
-	}()
+	if !options.SkipCategories {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			cmd.DownloadCategories(httpClient, options, imagesChan, reporter)
+		}()
+	}
 
 	// Ждем когда очедь картинок будет наполнена
 	wg.Wait()

@@ -12,6 +12,8 @@ type Options struct {
 	StoreID         int
 	Parallelism     int
 	FetchLimit      int
+	SkipProducts    bool
+	SkipCategories  bool
 	UseCombinations bool
 	Verbose         bool
 	DownloadDir     string
@@ -28,6 +30,8 @@ func init() {
 	flag.BoolVar(&options.UseCombinations, "use-combinations", false, "Download combination images")
 	flag.BoolVar(&options.Verbose, "verbose", false, "Detailed logs")
 	flag.BoolVar(&options.SkipDownloaded, "skip-downloaded", false, "Skip images already present on disk")
+	flag.BoolVar(&options.SkipProducts, "skip-products", false, "Skip product images")
+	flag.BoolVar(&options.SkipCategories, "skip-categories", false, "Skip categories images")
 	flag.StringVar(&options.DownloadDir, "download-dir", "", "Dir for download images (default: downloads/storeId)")
 }
 
