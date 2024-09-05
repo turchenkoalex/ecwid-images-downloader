@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/turchenkoalex/ecwid-images-downloader/api"
-	"github.com/turchenkoalex/ecwid-images-downloader/status"
 	"io"
 	"net/http"
 	"os"
 	"sync"
+
+	"github.com/turchenkoalex/ecwid-images-downloader/api"
+	"github.com/turchenkoalex/ecwid-images-downloader/status"
 )
 
 func DownloadProducts(httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
@@ -121,13 +122,17 @@ func downloadFile(client *http.Client, skipPresent bool, image api.Image) error 
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(response.Body)
 
 	outputFile, err := os.Create(image.FileName)
 	if err != nil {
 		return err
 	}
-	defer outputFile.Close()
+	defer func(outputFile *os.File) {
+		_ = outputFile.Close()
+	}(outputFile)
 
 	_, err = io.Copy(outputFile, response.Body)
 	return err

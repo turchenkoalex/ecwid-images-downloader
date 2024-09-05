@@ -1,3 +1,3 @@
 module github.com/turchenkoalex/ecwid-images-downloader
 
-go 1.16
+go 1.23

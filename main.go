@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/turchenkoalex/ecwid-images-downloader/cmd"
-	"github.com/turchenkoalex/ecwid-images-downloader/status"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/turchenkoalex/ecwid-images-downloader/cmd"
+	"github.com/turchenkoalex/ecwid-images-downloader/status"
 
 	"github.com/turchenkoalex/ecwid-images-downloader/api"
 )
