@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,12 +12,19 @@ import (
 	"github.com/turchenkoalex/ecwid-images-downloader/status"
 )
 
-func DownloadProducts(httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
+func DownloadProducts(ctx context.Context, httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
 	limit := options.FetchLimit
 	offset := 0
 	total := status.GetTotalProductsCount()
 
 	for offset < total {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			// continue processing
+		}
+
 		products, err := api.LoadProducts(httpClient, options.StoreID, options.PublicToken, offset, limit)
 		if err != nil {
 			fmt.Println("Download interrupted", err)
@@ -26,6 +34,13 @@ func DownloadProducts(httpClient *http.Client, options Options, imagesChan chan 
 		wg := sync.WaitGroup{}
 
 		for _, product := range products.Items {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// continue processing
+			}
+
 			images := product.Images()
 
 			for _, image := range images {
@@ -40,7 +55,7 @@ func DownloadProducts(httpClient *http.Client, options Options, imagesChan chan 
 				go func() {
 					defer wg.Done()
 					// Загрузим параллельно комбинации товара и поставим их картинки в очередь
-					downloadCombinations(httpClient, productId, options, imagesChan, status)
+					downloadCombinations(ctx, httpClient, productId, options, imagesChan, status)
 				}()
 			}
 
@@ -54,10 +69,17 @@ func DownloadProducts(httpClient *http.Client, options Options, imagesChan chan 
 	status.MarkAllProductsScheduled()
 }
 
-func downloadCombinations(httpClient *http.Client, productId int, options Options, imagesChan chan api.Image, status *status.Reporter) {
+func downloadCombinations(ctx context.Context, httpClient *http.Client, productId int, options Options, imagesChan chan api.Image, status *status.Reporter) {
 	combinations, err := api.LoadProductCombinations(httpClient, options.StoreID, options.PublicToken, productId)
 	if err == nil {
 		for _, combination := range combinations {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// continue processing
+			}
+
 			image := combination.Image(productId)
 			if image != nil {
 				imagesChan <- *image
@@ -67,12 +89,19 @@ func downloadCombinations(httpClient *http.Client, productId int, options Option
 	}
 }
 
-func DownloadCategories(httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
+func DownloadCategories(ctx context.Context, httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
 	limit := options.FetchLimit
 	offset := 0
 	total := status.GetTotalCategoriesCount()
 
 	for offset < total {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			// continue processing
+		}
+
 		categories, err := api.LoadCategories(httpClient, options.StoreID, options.PublicToken, offset, limit)
 		if err != nil {
 			fmt.Println("Download interrupted", err)
@@ -80,6 +109,13 @@ func DownloadCategories(httpClient *http.Client, options Options, imagesChan cha
 		}
 
 		for _, category := range categories.Items {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// continue processing
+			}
+
 			image := category.Image()
 			if image != nil {
 				imagesChan <- *image
@@ -94,8 +130,15 @@ func DownloadCategories(httpClient *http.Client, options Options, imagesChan cha
 	status.MarkAllCategoriesScheduled()
 }
 
-func DownloadImages(httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
+func DownloadImages(ctx context.Context, httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
 	for image := range imagesChan {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			// continue processing
+		}
+
 		err := downloadFile(httpClient, options.SkipDownloaded, image)
 
 		success := err == nil

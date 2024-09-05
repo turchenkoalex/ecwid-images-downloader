@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -25,7 +26,7 @@ type Product struct {
 	Media ProductMedia
 }
 
-// Product combination - https://api-docs.ecwid.com/reference/variations#response
+// ProductCombination - https://api-docs.ecwid.com/reference/variations#response
 type ProductCombination struct {
 	ID                int
 	CombinationNumber int
@@ -140,7 +141,9 @@ func readJSON(httpClient *http.Client, url string, target interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(response.Body)
 
 	if response.StatusCode == 403 {
 		return errors.New("INVALID_TOKEN")

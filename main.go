@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/turchenkoalex/ecwid-images-downloader/cmd"
@@ -14,6 +17,8 @@ import (
 )
 
 func main() {
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+
 	cmd.PrintVersion()
 
 	options, err := cmd.ReadOptions()
@@ -92,7 +97,7 @@ func main() {
 	for jobID := 1; jobID <= options.Parallelism; jobID++ {
 		go func() {
 			defer downloadsWG.Done()
-			cmd.DownloadImages(httpClient, options, imagesChan, reporter)
+			cmd.DownloadImages(ctx, httpClient, options, imagesChan, reporter)
 		}()
 	}
 
@@ -103,8 +108,10 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			cmd.DownloadProducts(httpClient, options, imagesChan, reporter)
+			cmd.DownloadProducts(ctx, httpClient, options, imagesChan, reporter)
 		}()
+	} else {
+		reporter.MarkAllProductsScheduled()
 	}
 
 	// загрузим все категории и поставим загрузку картинок в очередь imagesChan
@@ -112,8 +119,10 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			cmd.DownloadCategories(httpClient, options, imagesChan, reporter)
+			cmd.DownloadCategories(ctx, httpClient, options, imagesChan, reporter)
 		}()
+	} else {
+		reporter.MarkAllProductsScheduled()
 	}
 
 	// Ждем когда очедь картинок будет наполнена
