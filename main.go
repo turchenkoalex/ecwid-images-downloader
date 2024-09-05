@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Ecwid Image Downloader 0.1")
+	cmd.PrintVersion()
 
 	options, err := cmd.ReadOptions()
 	if err != nil {
