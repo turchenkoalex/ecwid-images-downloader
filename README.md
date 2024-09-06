@@ -6,7 +6,7 @@ Usage:
 ./ecwid-images-downloader -store SID -public-token public_TOKEN
 ```
 
-You can get public_TOKEN if you open the storefront and in the browser console execute command `EcwidObj.publicToken`,
+You can get public_TOKEN if you open the storefront and in the browser console execute command `Ecwid.getAppPublicToken('ecwid-storefront')`,
 the result of the form `public_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` use instead of `public_TOKEN`.
 
 All args:
