@@ -63,8 +63,8 @@ func (status *Reporter) MarkAllProductsScheduled() {
 }
 
 func (status *Reporter) allImagesScheduled() bool {
-	return 1 == atomic.LoadInt32(&status.allCategoriesScheduled) &&
-		1 == atomic.LoadInt32(&status.allProductsScheduled)
+	return atomic.LoadInt32(&status.allCategoriesScheduled) == 1 &&
+		atomic.LoadInt32(&status.allProductsScheduled) == 1
 }
 
 func (status *Reporter) MarkImageDownloaded(success bool) {
