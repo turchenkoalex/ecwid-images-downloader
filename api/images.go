@@ -104,15 +104,16 @@ func (category Category) Image(includeName bool) *Image {
 	return &downloadableImage
 }
 
+const maxFilenameLength = 255
+
 func sanitizeFilename(name string) string {
 	name = strings.TrimSpace(name)
 	name = strings.ReplaceAll(name, " ", "_")
 	invalidChars := regexp.MustCompile(`[<>:"/\\|?*\x00-\x1F#]`)
-	name = invalidChars.ReplaceAllString(name, "_")
+	name = invalidChars.ReplaceAllString(name, "")
 
-	const maxLength = 255
-	if len(name) > maxLength {
-		name = name[:maxLength]
+	if len(name) > maxFilenameLength {
+		name = name[:maxFilenameLength]
 	}
 
 	if name == "" {
