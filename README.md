@@ -12,9 +12,11 @@ the result of the form `public_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` use instead o
 All args:
 
 ```shell
-Usage of ./ecwid-images-downloader-arm64:
+Usage of ./ecwid-images-downloader-darwin-arm64:
   -download-dir string
     	Dir for download images (default: downloads/storeId)
+  -include-names
+    	Use product names in image file names
   -limit int
     	API v3 fetch limit (default 100)
   -parallelism int
