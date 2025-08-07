@@ -106,7 +106,7 @@ func (category Category) Image(includeName bool) *Image {
 
 const maxFilenameLength = 255
 
-var invalidChars = regexp.MustCompile(`[<>:"/\\|?*\x00-\x1F#]`)
+var invalidChars = regexp.MustCompile(`[<>:"/\\|?*\x00-\x1F#,]`)
 
 func sanitizeFilename(name string) string {
 	name = strings.TrimSpace(name)
