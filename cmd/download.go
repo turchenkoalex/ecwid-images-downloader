@@ -41,7 +41,7 @@ func DownloadProducts(ctx context.Context, httpClient *http.Client, options Opti
 				// continue processing
 			}
 
-			images := product.Images()
+			images := product.Images(options.IncludeNames)
 
 			for _, image := range images {
 				imagesChan <- image
@@ -50,12 +50,13 @@ func DownloadProducts(ctx context.Context, httpClient *http.Client, options Opti
 
 			if options.UseCombinations {
 				productId := product.ID
+				productName := product.Name
 
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
 					// Загрузим параллельно комбинации товара и поставим их картинки в очередь
-					downloadCombinations(ctx, httpClient, productId, options, imagesChan, status)
+					downloadCombinations(ctx, httpClient, productId, productName, options, imagesChan, status)
 				}()
 			}
 
@@ -69,7 +70,7 @@ func DownloadProducts(ctx context.Context, httpClient *http.Client, options Opti
 	status.MarkAllProductsScheduled()
 }
 
-func downloadCombinations(ctx context.Context, httpClient *http.Client, productId int, options Options, imagesChan chan api.Image, status *status.Reporter) {
+func downloadCombinations(ctx context.Context, httpClient *http.Client, productId int, productName string, options Options, imagesChan chan api.Image, status *status.Reporter) {
 	combinations, err := api.LoadProductCombinations(httpClient, options.StoreID, options.PublicToken, productId)
 	if err == nil {
 		for _, combination := range combinations {
@@ -80,7 +81,7 @@ func downloadCombinations(ctx context.Context, httpClient *http.Client, productI
 				// continue processing
 			}
 
-			image := combination.Image(productId)
+			image := combination.Image(productId, productName, options.IncludeNames)
 			if image != nil {
 				imagesChan <- *image
 				status.MarkImageAdded()
@@ -116,7 +117,7 @@ func DownloadCategories(ctx context.Context, httpClient *http.Client, options Op
 				// continue processing
 			}
 
-			image := category.Image()
+			image := category.Image(options.IncludeNames)
 			if image != nil {
 				imagesChan <- *image
 				status.MarkImageAdded()
@@ -169,7 +170,14 @@ func downloadFile(client *http.Client, skipPresent bool, image api.Image) error 
 		_ = Body.Close()
 	}(response.Body)
 
-	outputFile, err := os.Create(image.FileName)
+	// create the directory if it does not exist
+	if err := os.MkdirAll(image.Dir, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create directory for image: %w", err)
+	}
+
+	filePath := fmt.Sprintf("%s/%s", image.Dir, image.FileName)
+
+	outputFile, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
