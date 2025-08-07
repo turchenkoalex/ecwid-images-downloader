@@ -18,6 +18,7 @@ type Options struct {
 	Verbose         bool
 	DownloadDir     string
 	SkipDownloaded  bool
+	IncludeNames    bool
 }
 
 var options Options
@@ -32,6 +33,7 @@ func init() {
 	flag.BoolVar(&options.SkipDownloaded, "skip-downloaded", false, "Skip images already present on disk")
 	flag.BoolVar(&options.SkipProducts, "skip-products", false, "Skip product images")
 	flag.BoolVar(&options.SkipCategories, "skip-categories", false, "Skip categories images")
+	flag.BoolVar(&options.IncludeNames, "include-names", false, "Use product names in image file names")
 	flag.StringVar(&options.DownloadDir, "download-dir", "", "Dir for download images (default: downloads/storeId)")
 }
 
