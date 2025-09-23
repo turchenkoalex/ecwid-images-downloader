@@ -12,7 +12,7 @@ import (
 	"github.com/turchenkoalex/ecwid-images-downloader/status"
 )
 
-func DownloadProducts(ctx context.Context, httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
+func DownloadProducts(ctx context.Context, httpClient *http.Client, options Options, publicToken string, imagesChan chan api.Image, status *status.Reporter) {
 	limit := options.FetchLimit
 	offset := 0
 	total := status.GetTotalProductsCount()
@@ -25,7 +25,7 @@ func DownloadProducts(ctx context.Context, httpClient *http.Client, options Opti
 			// continue processing
 		}
 
-		products, err := api.LoadProducts(httpClient, options.StoreID, options.PublicToken, offset, limit)
+		products, err := api.LoadProducts(httpClient, options.StoreID, publicToken, offset, limit)
 		if err != nil {
 			fmt.Println("Download interrupted", err)
 			return
@@ -56,7 +56,7 @@ func DownloadProducts(ctx context.Context, httpClient *http.Client, options Opti
 				go func() {
 					defer wg.Done()
 					// Загрузим параллельно комбинации товара и поставим их картинки в очередь
-					downloadCombinations(ctx, httpClient, productId, productName, options, imagesChan, status)
+					downloadCombinations(ctx, httpClient, productId, productName, options, publicToken, imagesChan, status)
 				}()
 			}
 
@@ -70,8 +70,8 @@ func DownloadProducts(ctx context.Context, httpClient *http.Client, options Opti
 	status.MarkAllProductsScheduled()
 }
 
-func downloadCombinations(ctx context.Context, httpClient *http.Client, productId int, productName string, options Options, imagesChan chan api.Image, status *status.Reporter) {
-	combinations, err := api.LoadProductCombinations(httpClient, options.StoreID, options.PublicToken, productId)
+func downloadCombinations(ctx context.Context, httpClient *http.Client, productId int, productName string, options Options, publicToken string, imagesChan chan api.Image, status *status.Reporter) {
+	combinations, err := api.LoadProductCombinations(httpClient, options.StoreID, publicToken, productId)
 	if err == nil {
 		for _, combination := range combinations {
 			select {
@@ -90,7 +90,7 @@ func downloadCombinations(ctx context.Context, httpClient *http.Client, productI
 	}
 }
 
-func DownloadCategories(ctx context.Context, httpClient *http.Client, options Options, imagesChan chan api.Image, status *status.Reporter) {
+func DownloadCategories(ctx context.Context, httpClient *http.Client, options Options, publicToken string, imagesChan chan api.Image, status *status.Reporter) {
 	limit := options.FetchLimit
 	offset := 0
 	total := status.GetTotalCategoriesCount()
@@ -103,7 +103,7 @@ func DownloadCategories(ctx context.Context, httpClient *http.Client, options Op
 			// continue processing
 		}
 
-		categories, err := api.LoadCategories(httpClient, options.StoreID, options.PublicToken, offset, limit)
+		categories, err := api.LoadCategories(httpClient, options.StoreID, publicToken, offset, limit)
 		if err != nil {
 			fmt.Println("Download interrupted", err)
 			return

@@ -69,7 +69,7 @@ type Category struct {
 }
 
 // LoadProducts - load products from api v3
-func LoadProducts(httpClient *http.Client, storeID int, apiToken string, offset int, limit int) (Products, error) {
+func LoadProducts(httpClient *http.Client, storeID int64, apiToken string, offset int, limit int) (Products, error) {
 	products := &Products{}
 	url := buildProductsURL(storeID, apiToken, offset, limit)
 	err := readJSON(httpClient, url, products)
@@ -81,7 +81,7 @@ func LoadProducts(httpClient *http.Client, storeID int, apiToken string, offset 
 }
 
 // LoadCategories - load categories from api v3
-func LoadCategories(httpClient *http.Client, storeID int, apiToken string, offset int, limit int) (Categories, error) {
+func LoadCategories(httpClient *http.Client, storeID int64, apiToken string, offset int, limit int) (Categories, error) {
 	categories := &Categories{}
 	url := buildCategoriesURL(storeID, apiToken, offset, limit)
 	err := readJSON(httpClient, url, categories)
@@ -93,7 +93,7 @@ func LoadCategories(httpClient *http.Client, storeID int, apiToken string, offse
 }
 
 // LoadProductCombinations - load product combinations from api v3
-func LoadProductCombinations(httpClient *http.Client, storeID int, apiToken string, productId int) ([]ProductCombination, error) {
+func LoadProductCombinations(httpClient *http.Client, storeID int64, apiToken string, productId int) ([]ProductCombination, error) {
 	var productCombinations []ProductCombination
 	url := buildProductCombinationsURL(storeID, apiToken, productId)
 	err := readJSON(httpClient, url, &productCombinations)
@@ -105,7 +105,7 @@ func LoadProductCombinations(httpClient *http.Client, storeID int, apiToken stri
 }
 
 // LoadProductsTotalCount - load products total count
-func LoadProductsTotalCount(httpClient *http.Client, storeID int, apiToken string) (int, error) {
+func LoadProductsTotalCount(httpClient *http.Client, storeID int64, apiToken string) (int, error) {
 	products, err := LoadProducts(httpClient, storeID, apiToken, 0, 0)
 	if err != nil {
 		return 0, err
@@ -115,7 +115,7 @@ func LoadProductsTotalCount(httpClient *http.Client, storeID int, apiToken strin
 }
 
 // LoadCategoriesTotalCount - load categories total count
-func LoadCategoriesTotalCount(httpClient *http.Client, storeID int, apiToken string) (int, error) {
+func LoadCategoriesTotalCount(httpClient *http.Client, storeID int64, apiToken string) (int, error) {
 	categories, err := LoadCategories(httpClient, storeID, apiToken, 0, 0)
 	if err != nil {
 		return 0, err
@@ -124,15 +124,15 @@ func LoadCategoriesTotalCount(httpClient *http.Client, storeID int, apiToken str
 	return categories.Total, nil
 }
 
-func buildProductsURL(storeID int, apiToken string, offset int, limit int) string {
+func buildProductsURL(storeID int64, apiToken string, offset int, limit int) string {
 	return fmt.Sprintf("%s/%d/products?token=%s&limit=%d&offset=%d", apiBaseURL, storeID, apiToken, limit, offset)
 }
 
-func buildProductCombinationsURL(storeID int, apiToken string, productId int) string {
+func buildProductCombinationsURL(storeID int64, apiToken string, productId int) string {
 	return fmt.Sprintf("%s/%d/products/%d/combinations?token=%s", apiBaseURL, storeID, productId, apiToken)
 }
 
-func buildCategoriesURL(storeID int, apiToken string, offset int, limit int) string {
+func buildCategoriesURL(storeID int64, apiToken string, offset int, limit int) string {
 	return fmt.Sprintf("%s/%d/categories?token=%s&limit=%d&offset=%d", apiBaseURL, storeID, apiToken, limit, offset)
 }
 

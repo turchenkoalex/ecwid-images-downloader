@@ -3,13 +3,10 @@
 Usage:
 
 ```shell
-./ecwid-images-downloader -store SID -public-token public_TOKEN
+./ecwid-images-downloader -store SID
 ```
 
-You can get public_TOKEN if you open the storefront and in the browser console execute command `Ecwid.getAppPublicToken('ecwid-storefront')`,
-the result of the form `public_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` use instead of `public_TOKEN`.
-
-All args:
+How to use:
 
 ```shell
 Usage of ./ecwid-images-downloader-darwin-arm64:
@@ -21,8 +18,6 @@ Usage of ./ecwid-images-downloader-darwin-arm64:
     	API v3 fetch limit (default 100)
   -parallelism int
     	Download parallelism (default 5)
-  -public-token string
-    	Public Access Token. You can get it from storefront Ecwid.getAppPublicToken('ecwid-storefront')
   -skip-categories
     	Skip categories images
   -skip-downloaded
