@@ -4,12 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 )
 
 type Options struct {
-	PublicToken     string
-	StoreID         int
+	StoreID         int64
 	Parallelism     int
 	FetchLimit      int
 	SkipProducts    bool
@@ -24,8 +22,7 @@ type Options struct {
 var options Options
 
 func init() {
-	flag.StringVar(&options.PublicToken, "public-token", "", "Public Access Token. You can get it from storefront Ecwid.getAppPublicToken('ecwid-storefront')")
-	flag.IntVar(&options.StoreID, "store", 0, "Store ID")
+	flag.Int64Var(&options.StoreID, "store", 0, "Store ID")
 	flag.IntVar(&options.Parallelism, "parallelism", 5, "Download parallelism")
 	flag.IntVar(&options.FetchLimit, "limit", 100, "API v3 fetch limit")
 	flag.BoolVar(&options.UseCombinations, "use-combinations", false, "Download combination images")
@@ -39,11 +36,6 @@ func init() {
 
 func ReadOptions() (Options, error) {
 	flag.Parse()
-
-	if options.PublicToken == "" {
-		flag.Usage()
-		return options, fmt.Errorf("please add public-token argument")
-	}
 
 	if options.StoreID == 0 {
 		flag.Usage()
@@ -67,7 +59,7 @@ func ReadOptions() (Options, error) {
 	}
 
 	if options.DownloadDir == "" {
-		options.DownloadDir = "downloads/" + strconv.Itoa(options.StoreID)
+		options.DownloadDir = fmt.Sprintf("downloads/%d", options.StoreID)
 	}
 	err := configureDirs(options.DownloadDir)
 	if err != nil {

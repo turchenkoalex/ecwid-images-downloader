@@ -43,22 +43,29 @@ func main() {
 		subject = "products and categories"
 	}
 
+	httpClient := &http.Client{Timeout: 15 * time.Second}
+
+	publicToken := api.RetrievePublicToken(httpClient, options.StoreID)
+	if len(publicToken) == 0 {
+		fmt.Printf("Can't retrieve public token for store %d. Please check that store ID is correct and store has instant site.\n", options.StoreID)
+		os.Exit(1)
+		return
+	}
+
 	fmt.Printf("Start downloading %s images (combinations mode: %v) for store %d with token %s to dir %s. (parallelism: %d)\n",
 		subject,
 		options.UseCombinations,
 		options.StoreID,
-		options.PublicToken,
+		publicToken,
 		options.DownloadDir,
 		options.Parallelism,
 	)
-
-	httpClient := &http.Client{Timeout: 15 * time.Second}
 
 	totalProductCount := 0
 	totalCategoriesCount := 0
 
 	if !options.SkipProducts {
-		totalProductCount, err = api.LoadProductsTotalCount(httpClient, options.StoreID, options.PublicToken)
+		totalProductCount, err = api.LoadProductsTotalCount(httpClient, options.StoreID, publicToken)
 		if err != nil {
 			fmt.Println("Error occurred while calculate products count", err)
 			return
@@ -66,7 +73,7 @@ func main() {
 	}
 
 	if !options.SkipCategories {
-		totalCategoriesCount, err = api.LoadCategoriesTotalCount(httpClient, options.StoreID, options.PublicToken)
+		totalCategoriesCount, err = api.LoadCategoriesTotalCount(httpClient, options.StoreID, publicToken)
 		if err != nil {
 			fmt.Println("Error occurred while calculate categories count", err)
 			return
@@ -108,7 +115,7 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			cmd.DownloadProducts(ctx, httpClient, options, imagesChan, reporter)
+			cmd.DownloadProducts(ctx, httpClient, options, publicToken, imagesChan, reporter)
 		}()
 	} else {
 		reporter.MarkAllProductsScheduled()
@@ -119,7 +126,7 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			cmd.DownloadCategories(ctx, httpClient, options, imagesChan, reporter)
+			cmd.DownloadCategories(ctx, httpClient, options, publicToken, imagesChan, reporter)
 		}()
 	} else {
 		reporter.MarkAllProductsScheduled()
