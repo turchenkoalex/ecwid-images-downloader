@@ -132,7 +132,7 @@ func main() {
 			cmd.DownloadCategories(ctx, httpClient, options, apiToken, imagesChan, reporter)
 		}()
 	} else {
-		reporter.MarkAllProductsScheduled()
+		reporter.MarkAllCategoriesScheduled()
 	}
 
 	// Ждем когда очедь картинок будет наполнена
