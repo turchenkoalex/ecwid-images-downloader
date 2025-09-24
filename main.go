@@ -25,13 +25,11 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-		return
 	}
 
 	if options.SkipProducts && options.SkipCategories {
 		fmt.Println("Skip categories and products in same time not allowed")
 		os.Exit(1)
-		return
 	}
 
 	subject := ""
@@ -54,7 +52,6 @@ func main() {
 		if len(apiToken) == 0 {
 			fmt.Printf("No token provided and can't retrieve public token for store %d. Please check that store ID is correct and store has instant site or provide token manually with -token argument.\n", options.StoreID)
 			os.Exit(1)
-			return
 		}
 	}
 
