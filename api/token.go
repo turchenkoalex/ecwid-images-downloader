@@ -43,7 +43,16 @@ func RetrievePublicToken(httpClient *http.Client, storeId int64) string {
 		return ""
 	}
 
-	return r.StoreProfile.Value.AppsSettings.PublicTokens["ecwid-storefront"]
+	if r.StoreProfile.Value.AppsSettings.PublicTokens == nil {
+		return ""
+	}
+
+	token, ok := r.StoreProfile.Value.AppsSettings.PublicTokens["ecwid-storefront"]
+	if !ok {
+		return ""
+	}
+
+	return token
 }
 
 type tokenResponse struct {

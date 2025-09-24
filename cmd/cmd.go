@@ -17,6 +17,7 @@ type Options struct {
 	DownloadDir     string
 	SkipDownloaded  bool
 	IncludeNames    bool
+	Token           string
 }
 
 var options Options
@@ -32,6 +33,7 @@ func init() {
 	flag.BoolVar(&options.SkipCategories, "skip-categories", false, "Skip categories images")
 	flag.BoolVar(&options.IncludeNames, "include-names", false, "Use product names in image file names")
 	flag.StringVar(&options.DownloadDir, "download-dir", "", "Dir for download images (default: downloads/storeId)")
+	flag.StringVar(&options.Token, "token", "", "Token to access API v3 (if not provided, will try to retrieve public token)")
 }
 
 func ReadOptions() (Options, error) {
