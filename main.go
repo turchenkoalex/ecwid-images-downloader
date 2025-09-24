@@ -25,13 +25,11 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-		return
 	}
 
 	if options.SkipProducts && options.SkipCategories {
 		fmt.Println("Skip categories and products in same time not allowed")
 		os.Exit(1)
-		return
 	}
 
 	subject := ""
@@ -45,18 +43,23 @@ func main() {
 
 	httpClient := &http.Client{Timeout: 15 * time.Second}
 
-	publicToken := api.RetrievePublicToken(httpClient, options.StoreID)
-	if len(publicToken) == 0 {
-		fmt.Printf("Can't retrieve public token for store %d. Please check that store ID is correct and store has instant site.\n", options.StoreID)
+	var apiToken string
+	if len(options.Token) == 0 {
+		apiToken = api.RetrievePublicToken(httpClient, options.StoreID)
+	} else {
+		apiToken = options.Token
+	}
+
+	if len(apiToken) == 0 {
+		fmt.Printf("No token provided and can't retrieve public token for store %d. Please check that store ID is correct and store has instant site or provide token manually with -token argument.\n", options.StoreID)
 		os.Exit(1)
-		return
 	}
 
 	fmt.Printf("Start downloading %s images (combinations mode: %v) for store %d with token %s to dir %s. (parallelism: %d)\n",
 		subject,
 		options.UseCombinations,
 		options.StoreID,
-		publicToken,
+		apiToken,
 		options.DownloadDir,
 		options.Parallelism,
 	)
@@ -65,7 +68,7 @@ func main() {
 	totalCategoriesCount := 0
 
 	if !options.SkipProducts {
-		totalProductCount, err = api.LoadProductsTotalCount(httpClient, options.StoreID, publicToken)
+		totalProductCount, err = api.LoadProductsTotalCount(httpClient, options.StoreID, apiToken)
 		if err != nil {
 			fmt.Println("Error occurred while calculate products count", err)
 			return
@@ -73,7 +76,7 @@ func main() {
 	}
 
 	if !options.SkipCategories {
-		totalCategoriesCount, err = api.LoadCategoriesTotalCount(httpClient, options.StoreID, publicToken)
+		totalCategoriesCount, err = api.LoadCategoriesTotalCount(httpClient, options.StoreID, apiToken)
 		if err != nil {
 			fmt.Println("Error occurred while calculate categories count", err)
 			return
@@ -115,7 +118,7 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			cmd.DownloadProducts(ctx, httpClient, options, publicToken, imagesChan, reporter)
+			cmd.DownloadProducts(ctx, httpClient, options, apiToken, imagesChan, reporter)
 		}()
 	} else {
 		reporter.MarkAllProductsScheduled()
@@ -126,10 +129,10 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			cmd.DownloadCategories(ctx, httpClient, options, publicToken, imagesChan, reporter)
+			cmd.DownloadCategories(ctx, httpClient, options, apiToken, imagesChan, reporter)
 		}()
 	} else {
-		reporter.MarkAllProductsScheduled()
+		reporter.MarkAllCategoriesScheduled()
 	}
 
 	// Ждем когда очедь картинок будет наполнена
