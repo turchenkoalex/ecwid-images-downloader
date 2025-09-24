@@ -29,7 +29,7 @@ Usage of ./ecwid-images-downloader-darwin-arm64:
   -use-combinations
     	Download combination images
   -token string
-    	APIv3 token (if not provided retrieve public token from Instant Site API)
+    	APIv3 token (if not provided, retrieve public token from Instant Site API)
   -verbose
     	Detailed logs
 ```
