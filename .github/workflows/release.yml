@@ -17,6 +17,15 @@ jobs:
       matrix:
         os: [linux, darwin]
         arch: [amd64, arm64]
+        include:
+          - os: darwin
+            prettyos: macos
+          - os: linux
+            prettyos: linux
+          - arch: amd64
+            prettyarch: intel
+          - arch: arm64
+            prettyarch: arm
 
     steps:
       - name: Checkout code
@@ -32,17 +41,17 @@ jobs:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          go build -ldflags "-s -w -X github.com/turchenkoalex/ecwid-images-downloader/cmd.version=${{ github.ref_name }} -X github.com/turchenkoalex/ecwid-images-downloader/cmd.commit=${{ github.sha }} -X github.com/turchenkoalex/ecwid-images-downloader/cmd.date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" -o ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}
+          go build -ldflags "-s -w -X github.com/turchenkoalex/ecwid-images-downloader/cmd.version=${{ github.ref_name }} -X github.com/turchenkoalex/ecwid-images-downloader/cmd.commit=${{ github.sha }} -X github.com/turchenkoalex/ecwid-images-downloader/cmd.date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" -o ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}
 
       - name: Archive binary
         run: |
-          zip ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}.zip ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}
+          zip ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}.zip ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}
 
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}
-          path: ecwid-images-downloader-${{ matrix.os }}-${{ matrix.arch }}.zip
+          name: ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}
+          path: ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}.zip
 
   release:
     needs: build
