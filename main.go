@@ -52,16 +52,10 @@ func main() {
 		apiToken = api.RetrievePublicToken(httpClient, options.StoreID)
 
 		if len(apiToken) == 0 {
-			fmt.Printf("Can't retrieve public token for store %d. Please check that store ID is correct and store has instant site or provide token manually.\n", options.StoreID)
+			fmt.Printf("No token provided and can't retrieve public token for store %d. Please check that store ID is correct and store has instant site or provide token manually with -token argument.\n", options.StoreID)
 			os.Exit(1)
 			return
 		}
-	}
-
-	if len(apiToken) == 0 {
-		fmt.Printf("No token provided for store %d. Please provide token manually with -token argument.\n", options.StoreID)
-		os.Exit(1)
-		return
 	}
 
 	fmt.Printf("Start downloading %s images (combinations mode: %v) for store %d with token %s to dir %s. (parallelism: %d)\n",
