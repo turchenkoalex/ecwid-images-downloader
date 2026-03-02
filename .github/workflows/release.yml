@@ -48,7 +48,7 @@ jobs:
           zip ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}.zip ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}
           path: ecwid-images-downloader-${{ matrix.prettyos }}-${{ matrix.prettyarch }}.zip
